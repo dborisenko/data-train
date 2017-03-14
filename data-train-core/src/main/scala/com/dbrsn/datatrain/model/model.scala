@@ -10,7 +10,7 @@ final case class Content(
   id: ContentId,
   createdAt: DateTime,
   resourceId: ResourceId,
-  contentType: ContentType,
+  contentType: Option[ContentType],
   contentName: String
 ) extends Identified {
   override type Id = ContentId

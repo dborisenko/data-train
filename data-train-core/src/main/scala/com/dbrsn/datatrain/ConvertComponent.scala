@@ -28,7 +28,7 @@ trait ConvertComponent[Img, FileExisted, FileNotExisted] {
 
   case class Convert[F[_], C[_]](
     contentName: String,
-    contentType: ContentType,
+    contentType: Option[ContentType],
     converter: (FileExisted, FileNotExisted) => Free[F, FileExisted],
     metadata: C[MetadataKey]
   )(implicit F: FsInject[F], M: MetadataInject[F], C: ContentInject[F], CT: Traverse[C])
