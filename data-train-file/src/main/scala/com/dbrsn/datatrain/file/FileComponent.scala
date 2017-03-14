@@ -4,10 +4,10 @@ import java.io.File
 
 import cats.~>
 import com.dbrsn.datatrain.dsl.FsComponent
-import com.dbrsn.datatrain.file.util.SystemUtil
 import com.dbrsn.datatrain.interpreter.ErrorOr
 import com.dbrsn.datatrain.model.ContentLengthMetadata
 import com.dbrsn.datatrain.model.ContentMd5Metadata
+import com.dbrsn.datatrain.util.SystemUtil
 import com.google.common.io.Files
 
 import scala.util.Try

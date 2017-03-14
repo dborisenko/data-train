@@ -1,4 +1,4 @@
-package com.dbrsn.datatrain.file.util
+package com.dbrsn.datatrain.util
 
 import java.io.File
 import java.io.FileInputStream
