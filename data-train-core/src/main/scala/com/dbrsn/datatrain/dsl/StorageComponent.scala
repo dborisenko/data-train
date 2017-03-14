@@ -1,11 +1,8 @@
 package com.dbrsn.datatrain.dsl
 
-import java.io.File
-
 import cats.free.Free
 import cats.free.Free.inject
 import cats.free.Inject
-import com.dbrsn.datatrain.model.Content
 
 import scala.language.higherKinds
 
@@ -33,5 +30,3 @@ trait StorageComponent[Content, FileExisted, FileNotExisted] {
   }
 
 }
-
-object contentStorage extends StorageComponent[Content, File, File]

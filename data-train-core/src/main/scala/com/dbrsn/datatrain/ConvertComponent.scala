@@ -17,12 +17,12 @@ import com.dbrsn.datatrain.util.Clock
 
 import scala.language.higherKinds
 
-trait ConvertComponent[Img, FileExisted, FileNotExisted]
-  extends FsComponent[FileExisted, FileNotExisted]
+trait ConvertComponent[Img, FileExisted, FileNotExisted] {
+  self: FsComponent[FileExisted, FileNotExisted]
     with StorageComponent[Content, FileExisted, FileNotExisted]
     with ImageConverterComponent[Img, FileExisted, FileNotExisted]
     with ImageComponent[Img, FileExisted, FileNotExisted]
-    with MetadataComponent[Content] {
+    with MetadataComponent[Content] =>
 
   def clock: Clock
 
