@@ -17,4 +17,5 @@ package object model {
 
   type ContentType = String
   type Md5 = String
+  type MetadataValue = String
 }

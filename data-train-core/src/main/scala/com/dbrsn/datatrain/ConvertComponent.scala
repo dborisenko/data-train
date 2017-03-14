@@ -39,7 +39,11 @@ trait ConvertComponent[Img, FileExisted, FileNotExisted] {
     def traverseMetadata(content: Content, file: FileExisted): FreeF[C[Metadata[Content, MetadataKey]]] = CT.traverse(metadata) { key =>
       val g: FreeF[Metadata[Content, MetadataKey]] = for {
         value <- F.readMetadata(file, key)
-        m <- M.createMetadata(content, key, value)
+        m <- M.createMetadata(Metadata[Content, MetadataKey](
+          id = content.id,
+          key = key,
+          value = value
+        ))
       } yield m
       g
     }

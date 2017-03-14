@@ -22,15 +22,3 @@ final case class Resource(
 ) extends Identified {
   override type Id = ResourceId
 }
-
-trait MetadataKey {
-  type Value
-}
-
-trait SpecificMetadataKey[T] extends MetadataKey
-
-final case class Metadata[T <: Identified, M <: MetadataKey](
-  id: T#Id,
-  key: M,
-  value: M#Value
-)

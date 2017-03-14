@@ -4,6 +4,7 @@ import cats.free.Free
 import cats.free.Free.inject
 import cats.free.Inject
 import com.dbrsn.datatrain.model.MetadataKey
+import com.dbrsn.datatrain.model.MetadataValue
 
 import scala.language.higherKinds
 
@@ -13,7 +14,7 @@ trait FsComponent[FileExisted, FileNotExisted] {
 
   object FsDSL {
 
-    case class ReadMetadata[M <: MetadataKey](file: FileExisted, key: M) extends FsDSL[M#Value]
+    case class ReadMetadata[M <: MetadataKey](file: FileExisted, key: M) extends FsDSL[MetadataValue]
 
     case object CreateTempDir extends FsDSL[FileExisted]
 
@@ -26,7 +27,7 @@ trait FsComponent[FileExisted, FileNotExisted] {
   class FsInject[F[_]](implicit I: Inject[FsDSL, F]) {
     import FsDSL._
 
-    final def readMetadata[M <: MetadataKey](file: FileExisted, key: M): Free[F, M#Value] = inject[FsDSL, F](ReadMetadata[M](file, key))
+    final def readMetadata[M <: MetadataKey](file: FileExisted, key: M): Free[F, MetadataValue] = inject[FsDSL, F](ReadMetadata[M](file, key))
     final def createTempDir: Free[F, FileExisted] = inject[FsDSL, F](CreateTempDir)
     final def describe(dir: FileExisted, contentName: String): Free[F, FileNotExisted] = inject[FsDSL, F](Describe(dir, contentName))
     final def delete(file: FileExisted): Free[F, Unit] = inject[FsDSL, F](Delete(file))

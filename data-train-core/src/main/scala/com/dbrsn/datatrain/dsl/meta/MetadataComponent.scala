@@ -15,18 +15,14 @@ trait MetadataComponent[T <: Identified] {
 
   object MetadataDSL {
 
-    case class Create[M <: MetadataKey](content: T, key: M, value: M#Value) extends MetadataDSL[Metadata[T, M]]
+    case class Create[M <: MetadataKey](metadata: Metadata[T, M]) extends MetadataDSL[Metadata[T, M]]
 
   }
 
   class MetadataInject[F[_]](implicit I: Inject[MetadataDSL, F]) {
     import MetadataDSL._
 
-    final def createMetadata[M <: MetadataKey](content: T, key: M, value: M#Value): Free[F, Metadata[T, M]] = inject[MetadataDSL, F](Create[M](
-      content = content,
-      key = key,
-      value = value
-    ))
+    final def createMetadata[M <: MetadataKey](metadata: Metadata[T, M]): Free[F, Metadata[T, M]] = inject[MetadataDSL, F](Create[M](metadata))
   }
 
   object MetadataInject {
