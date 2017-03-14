@@ -16,5 +16,26 @@ lazy val commonSettings = Seq(
   )
 )
 
-lazy val `data-train-dsl` = (project in file("data-train-dsl"))
+lazy val `data-train-core` = (project in file("data-train-core"))
   .settings(commonSettings: _*)
+
+lazy val `data-train-aws` = (project in file("data-train-aws"))
+  .settings(commonSettings: _*)
+  .dependsOn(`data-train-core`)
+
+lazy val `data-train-image` = (project in file("data-train-image"))
+  .settings(commonSettings: _*)
+  .dependsOn(`data-train-core`)
+
+lazy val `data-train-slick` = (project in file("data-train-slick"))
+  .settings(commonSettings: _*)
+  .dependsOn(`data-train-core`)
+
+lazy val `data-train` = (project in file("."))
+  .settings(commonSettings: _*)
+  .dependsOn(`data-train-aws`)
+  .dependsOn(`data-train-image`)
+  .dependsOn(`data-train-slick`)
+  .aggregate(`data-train-aws`)
+  .aggregate(`data-train-image`)
+  .aggregate(`data-train-slick`)
