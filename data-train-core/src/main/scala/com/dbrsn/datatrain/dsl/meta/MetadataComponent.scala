@@ -5,7 +5,6 @@ import cats.free.Free.inject
 import cats.free.Inject
 import com.dbrsn.datatrain.model.Identified
 import com.dbrsn.datatrain.model.Metadata
-import com.dbrsn.datatrain.model.MetadataKey
 
 import scala.language.higherKinds
 
@@ -15,14 +14,14 @@ trait MetadataComponent[T <: Identified] {
 
   object MetadataDSL {
 
-    case class Create[M <: MetadataKey](metadata: Metadata[T, M]) extends MetadataDSL[Metadata[T, M]]
+    case class Create(metadata: Metadata[T]) extends MetadataDSL[Metadata[T]]
 
   }
 
   class MetadataInject[F[_]](implicit I: Inject[MetadataDSL, F]) {
     import MetadataDSL._
 
-    final def createMetadata[M <: MetadataKey](metadata: Metadata[T, M]): Free[F, Metadata[T, M]] = inject[MetadataDSL, F](Create[M](metadata))
+    final def createMetadata(metadata: Metadata[T]): Free[F, Metadata[T]] = inject[MetadataDSL, F](Create(metadata))
   }
 
   object MetadataInject {

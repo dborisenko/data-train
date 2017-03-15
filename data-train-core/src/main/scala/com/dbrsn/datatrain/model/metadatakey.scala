@@ -21,7 +21,7 @@ class GenericMetadataKey[T: Decoder : Encoder] extends MetadataKey {
   def apply(value: Value): MetadataValue = encodeValue(value)
 }
 
-trait SpecificMetadataKey[T]
+trait SpecificMetadataKey[T] extends MetadataKey
 
 case object ContentLengthMetadata extends GenericMetadataKey[Long] with SpecificMetadataKey[Content]
 

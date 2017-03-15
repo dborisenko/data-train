@@ -1,9 +1,7 @@
 package com.dbrsn.datatrain.model
 
-final case class Metadata[T <: Identified, M <: MetadataKey](
+final case class Metadata[T <: Identified](
   id: T#Id,
-  key: M,
+  key: MetadataKey,
   value: MetadataValue
-) {
-  lazy val typedValue: Option[M#Value] = key.decodeValue(value)
-}
+)
