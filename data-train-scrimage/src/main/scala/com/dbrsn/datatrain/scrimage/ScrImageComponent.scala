@@ -4,7 +4,6 @@ import java.io.File
 
 import cats.~>
 import com.dbrsn.datatrain.dsl.ImageComponent
-import com.dbrsn.datatrain.interpreter.ErrorOr
 import com.dbrsn.datatrain.model.ImageSize
 import com.dbrsn.datatrain.model.ImageSizeMetadata
 import com.dbrsn.datatrain.model.MetadataKey
@@ -20,32 +19,32 @@ trait ScrImageComponent {
   self: ImageComponent[Image, File, File] =>
   import ImageDSL._
 
-  val ScrImageFileMetadataInterpreter: (File) => (MetadataKey) => Either[Throwable, MetadataValue] = (file: File) => {
+  val ScrImageFileMetadataInterpreter: (File) => PartialFunction[MetadataKey, Try[MetadataValue]] = (file: File) => PartialFunction {
     case ImageSizeMetadata =>
       Try {
         val image = Image.fromFile(file)
         ImageSizeMetadata(ImageSize(image.width, image.height))
-      }.toEither
+      }
   }
 
-  object ScrImageInterpreter extends (ImageDSL ~> ErrorOr) {
-    override def apply[A](fa: ImageDSL[A]): ErrorOr[A] = fa match {
+  object ScrImageInterpreter extends (ImageDSL ~> Try) {
+    override def apply[A](fa: ImageDSL[A]): Try[A] = fa match {
       case Cover(input, width, height)                              =>
-        Try(input.cover(width, height)).toEither
+        Try(input.cover(width, height))
       case ScaleTo(input, width, height)                            =>
-        Try(input.scaleTo(width, height)).toEither
+        Try(input.scaleTo(width, height))
       case ScaleToWidth(input, width)                               =>
-        Try(input.scaleToWidth(width)).toEither
+        Try(input.scaleToWidth(width))
       case ScaleToHeight(input, height)                             =>
-        Try(input.scaleToHeight(height)).toEither
+        Try(input.scaleToHeight(height))
       case ReadFromFile(input)                                      =>
-        Try(Image.fromFile(input)).toEither
+        Try(Image.fromFile(input))
       case WriteToPngFile(input, output, compressionLevel)          =>
-        Try(input.output(output)(PngWriter(compressionLevel))).toEither
+        Try(input.output(output)(PngWriter(compressionLevel)))
       case WriteToJpegFile(input, output, compression, progressive) =>
-        Try(input.output(output)(JpegWriter(compression, progressive))).toEither
+        Try(input.output(output)(JpegWriter(compression, progressive)))
       case WriteToGifFile(input, output, progressive)               =>
-        Try(input.output(output)(GifWriter(progressive))).toEither
+        Try(input.output(output)(GifWriter(progressive)))
     }
   }
 

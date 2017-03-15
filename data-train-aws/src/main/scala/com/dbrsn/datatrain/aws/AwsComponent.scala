@@ -11,7 +11,6 @@ import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.services.s3.model.CannedAccessControlList
 import com.dbrsn.datatrain.dsl.StorageComponent
-import com.dbrsn.datatrain.interpreter.ErrorOr
 import com.dbrsn.datatrain.model.Content
 import com.dbrsn.datatrain.util.UuidUtil
 import com.google.common.io.ByteStreams
@@ -32,7 +31,7 @@ trait AwsComponent {
   self: StorageComponent[Content, File, File] =>
   import StorageDSL._
 
-  class AwsInterpreter(config: AmazonS3StorageConfig) extends (StorageDSL ~> ErrorOr) {
+  class AwsInterpreter(config: AmazonS3StorageConfig) extends (StorageDSL ~> Try) {
 
     private val amazonS3Client: AmazonS3 = (config.accessKey, config.secretKey) match {
       case (Some(credentialsAccessKey), Some(credentialsSecretKey)) =>
@@ -54,14 +53,14 @@ trait AwsComponent {
       UuidUtil.toBase64(content.resourceId) + "/" + content.contentName
     }
 
-    override def apply[A](fa: StorageDSL[A]): ErrorOr[A] = fa match {
+    override def apply[A](fa: StorageDSL[A]): Try[A] = fa match {
       case PutContent(content, inputFile) =>
         Try {
           val src = contentPath(content)
           val s3Object = amazonS3Client.putObject(config.bucketName, src, inputFile)
           config.cannedAccessControlList.foreach(amazonS3Client.setObjectAcl(config.bucketName, src, _))
           ()
-        }.toEither
+        }
 
       case GetContent(content, outputFile) =>
         Try {
@@ -83,7 +82,7 @@ trait AwsComponent {
             s3Object.close()
           }
           outputFile
-        }.toEither
+        }
     }
   }
 

@@ -4,7 +4,6 @@ import java.io.File
 
 import cats.~>
 import com.dbrsn.datatrain.dsl.FsComponent
-import com.dbrsn.datatrain.interpreter.ErrorOr
 import com.dbrsn.datatrain.model.ContentLengthMetadata
 import com.dbrsn.datatrain.model.ContentMd5Metadata
 import com.dbrsn.datatrain.model.MetadataKey
@@ -18,26 +17,26 @@ trait FileComponent {
   self: FsComponent[File, File] =>
   import FsDSL._
 
-  val FileMetadataInterpreter: (File) => (MetadataKey) => Either[Throwable, MetadataValue] = (file: File) => {
+  val FileMetadataInterpreter: (File) => PartialFunction[MetadataKey, Try[MetadataValue]] = (file: File) => PartialFunction {
     case ContentLengthMetadata =>
-      Try(ContentLengthMetadata(file.length())).toEither
+      Try(ContentLengthMetadata(file.length()))
     case ContentMd5Metadata    =>
-      Try(ContentMd5Metadata(SystemUtil.base64Md5(file))).toEither
+      Try(ContentMd5Metadata(SystemUtil.base64Md5(file)))
   }
 
-  class FileInterpreter(metadataInterpreter: (File, MetadataKey) => ErrorOr[MetadataValue]) extends (FsDSL ~> ErrorOr) {
-    override def apply[A](fa: FsDSL[A]): ErrorOr[A] = fa match {
+  class FileInterpreter(metadataInterpreter: File => MetadataKey => Try[MetadataValue]) extends (FsDSL ~> Try) {
+    override def apply[A](fa: FsDSL[A]): Try[A] = fa match {
       case CreateTempDir                =>
-        Try(Files.createTempDir()).toEither
+        Try(Files.createTempDir())
       case Describe(dir, contentName)   =>
-        Try(new File(dir, contentName)).toEither
+        Try(new File(dir, contentName))
       case Delete(file)                 =>
         Try {
           file.delete()
           ()
-        }.toEither
+        }
       case ReadMetadata(file, metadata) =>
-        metadataInterpreter(file, metadata)
+        metadataInterpreter(file)(metadata)
     }
   }
 

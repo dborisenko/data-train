@@ -12,8 +12,6 @@ trait MetadataKey {
   def decodeValue(value: MetadataValue): Option[Value]
 }
 
-trait SpecificMetadataKey[T] extends MetadataKey
-
 class GenericMetadataKey[T: Decoder : Encoder] extends MetadataKey {
   override type Value = T
   private val encoder: Encoder[T] = implicitly[Encoder[Value]]
@@ -22,6 +20,8 @@ class GenericMetadataKey[T: Decoder : Encoder] extends MetadataKey {
 
   def apply(value: Value): MetadataValue = encodeValue(value)
 }
+
+trait SpecificMetadataKey[T]
 
 case object ContentLengthMetadata extends GenericMetadataKey[Long] with SpecificMetadataKey[Content]
 
