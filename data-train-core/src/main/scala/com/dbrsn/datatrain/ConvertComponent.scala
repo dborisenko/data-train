@@ -10,9 +10,6 @@ import com.dbrsn.datatrain.dsl.meta.MetadataComponent
 import com.dbrsn.datatrain.model.Content
 import com.dbrsn.datatrain.model.ContentId
 import com.dbrsn.datatrain.model.ContentMetadataKey
-import com.dbrsn.datatrain.model.ContentMetadataKey.ContentLengthMetadata
-import com.dbrsn.datatrain.model.ContentMetadataKey.ContentMd5Metadata
-import com.dbrsn.datatrain.model.ContentMetadataKey.ImageSizeMetadata
 import com.dbrsn.datatrain.model.ContentType
 import com.dbrsn.datatrain.model.Metadata
 import com.dbrsn.datatrain.model.ResourceId
@@ -29,9 +26,6 @@ trait ConvertComponent[Img, FileExisted, FileNotExisted, DirExisted, MetadataCol
     with MetadataComponent[Content] =>
 
   def clock: Clock
-
-  val FileDefaultMetadata: Set[ContentMetadataKey] = Set(ContentLengthMetadata, ContentMd5Metadata)
-  val ImageFileDefaultMetadata: Set[ContentMetadataKey] = FileDefaultMetadata + ImageSizeMetadata
 
   case class Convert[F[_]](
     contentName: String,

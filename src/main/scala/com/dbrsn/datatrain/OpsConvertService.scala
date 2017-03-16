@@ -24,7 +24,8 @@ import org.slf4j.LoggerFactory
 
 import scala.util.Try
 
-trait OpsConvertService extends ConvertComponent[Image, File, File, File, Set]
+trait OpsConvertService extends ConvertComponent[Image, File, File, File, List]
+  with BatchConvertComponent[Image, File, File, File, List, List]
   with FsComponent[File, File, File]
   with StorageComponent[Content, File, File]
   with ImageConverterComponent[Image, File, File]

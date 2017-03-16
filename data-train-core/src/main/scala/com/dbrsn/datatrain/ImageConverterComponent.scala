@@ -11,7 +11,7 @@ trait ImageConverterComponent[Img, FileExisted, FileNotExisted] {
   case class JpegImageConverter[F[_]](
     compression: Int = 80,
     progressive: Boolean = true,
-    transformer: Img => Free[F, Img]
+    transformer: Img => Free[F, Img] = (img: Img) => Free.pure[F, Img](img)
   )(implicit I: ImageInject[F])
     extends ((FileExisted, FileNotExisted) => Free[F, FileExisted]) {
     def apply(input: FileExisted, output: FileNotExisted): Free[F, FileExisted] = {
@@ -25,7 +25,7 @@ trait ImageConverterComponent[Img, FileExisted, FileNotExisted] {
 
   case class PngImageConverter[F[_]](
     compressionLevel: Int = 9,
-    transformer: Img => Free[F, Img]
+    transformer: Img => Free[F, Img] = (img: Img) => Free.pure[F, Img](img)
   )(implicit I: ImageInject[F])
     extends ((FileExisted, FileNotExisted) => Free[F, FileExisted]) {
     def apply(input: FileExisted, output: FileNotExisted): Free[F, FileExisted] = {
@@ -39,7 +39,7 @@ trait ImageConverterComponent[Img, FileExisted, FileNotExisted] {
 
   case class GifImageConverter[F[_]](
     progressive: Boolean = true,
-    transformer: Img => Free[F, Img]
+    transformer: Img => Free[F, Img] = (img: Img) => Free.pure[F, Img](img)
   )(implicit I: ImageInject[F])
     extends ((FileExisted, FileNotExisted) => Free[F, FileExisted]) {
     def apply(input: FileExisted, output: FileNotExisted): Free[F, FileExisted] = {
