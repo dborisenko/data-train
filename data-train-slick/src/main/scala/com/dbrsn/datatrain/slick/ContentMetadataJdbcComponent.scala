@@ -15,17 +15,20 @@ import slick.lifted.ProvenShape
 import slickless._
 
 trait ContentMetadataJdbcComponent[P <: JdbcProfile] {
-  self: ContentJdbcComponent[P] with MetadataComponent[Content] =>
+  self: ContentJdbcComponent[P] with HasMetadataKeyColumnType[P] =>
   val profile: P
+  val contentMetadata: MetadataComponent[Content]
 
+  import contentMetadata._
   import MetadataDSL._
   import profile.api._
 
-  implicit def metadataKeyColumnType: BaseColumnType[MetadataKey]
 
   def contentMetadataTableName: String = "dt_content_metadata"
 
   class ContentMetadataTable(tag: Tag) extends Table[Metadata[Content]](tag, contentMetadataTableName) {
+    private implicit val ct: BaseColumnType[MetadataKey] = metadataKeyColumnType
+
     def id: Rep[ContentId] = column[ContentId]("id", O.PrimaryKey)
     def key: Rep[MetadataKey] = column[MetadataKey]("key")
     def value: Rep[MetadataValue] = column[MetadataValue]("value")

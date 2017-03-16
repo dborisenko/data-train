@@ -26,6 +26,8 @@ trait ContentJdbcComponent[P <: JdbcProfile] {
   def contentTableName: String = "dt_content"
 
   class ContentTable(tag: Tag) extends Table[Content](tag, contentTableName) {
+    private implicit val ct: BaseColumnType[LocalDateTime] = localDateTimeColumnType
+
     def id: Rep[ContentId] = column[ContentId]("id", O.PrimaryKey)
     def createdAt: Rep[LocalDateTime] = column[LocalDateTime]("created_at")
     def resourceId: Rep[ResourceId] = column[ResourceId]("resource_id")

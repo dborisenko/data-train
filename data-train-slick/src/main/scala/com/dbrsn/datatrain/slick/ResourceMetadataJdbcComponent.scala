@@ -15,17 +15,19 @@ import slick.lifted.ProvenShape
 import slickless._
 
 trait ResourceMetadataJdbcComponent[P <: JdbcProfile] {
-  self: ResourceJdbcComponent[P] with MetadataComponent[Resource] =>
+  self: ResourceJdbcComponent[P] with HasMetadataKeyColumnType[P] =>
   val profile: P
+  val resourceMetadata: MetadataComponent[Resource]
 
+  import resourceMetadata._
   import MetadataDSL._
   import profile.api._
-
-  implicit def metadataKeyColumnType: BaseColumnType[MetadataKey]
 
   def resourceMetadataTableName: String = "dt_resource_metadata"
 
   class ResourceMetadataTable(tag: Tag) extends Table[Metadata[Resource]](tag, resourceMetadataTableName) {
+    private implicit val ct: BaseColumnType[MetadataKey] = metadataKeyColumnType
+
     def id: Rep[ResourceId] = column[ResourceId]("id", O.PrimaryKey)
     def key: Rep[MetadataKey] = column[MetadataKey]("key")
     def value: Rep[MetadataValue] = column[MetadataValue]("value")

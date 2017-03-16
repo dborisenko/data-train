@@ -4,8 +4,8 @@ import java.io.File
 
 import cats.~>
 import com.dbrsn.datatrain.dsl.ImageComponent
+import com.dbrsn.datatrain.model.ContentMetadataKey.ImageSizeMetadata
 import com.dbrsn.datatrain.model.ImageSize
-import com.dbrsn.datatrain.model.ImageSizeMetadata
 import com.dbrsn.datatrain.model.MetadataKey
 import com.dbrsn.datatrain.model.MetadataValue
 import com.sksamuel.scrimage.Image
@@ -19,7 +19,7 @@ trait ScrImageComponent {
   self: ImageComponent[Image, File, File] =>
   import ImageDSL._
 
-  val ScrImageFileMetadataInterpreter: (File) => PartialFunction[MetadataKey, Try[MetadataValue]] = (file: File) => PartialFunction {
+  val ScrImageFileMetadataInterpreter: File => PartialFunction[MetadataKey, Try[MetadataValue]] = (file: File) => PartialFunction {
     case ImageSizeMetadata =>
       Try {
         val image = Image.fromFile(file)

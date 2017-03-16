@@ -7,6 +7,7 @@ lazy val commonSettings = Seq(
   version := "0.0.1-SNAPSHOT",
   organization := "com.dbrsn",
   scalaVersion := "2.12.1",
+  crossScalaVersions := Seq("2.12.1", "2.11.8"),
   scalacOptions ++= Seq(
     "-deprecation", // Emit warning and location for usages of deprecated APIs.
     "-feature", // Emit warning and location for usages of features that should be imported explicitly.
@@ -36,6 +37,10 @@ lazy val `data-train-slick` = (project in file("data-train-slick"))
   .settings(commonSettings: _*)
   .dependsOn(`data-train-core`)
 
+lazy val `data-train-slick-postgresql` = (project in file("data-train-slick-postgresql"))
+  .settings(commonSettings: _*)
+  .dependsOn(`data-train-slick`)
+
 lazy val `data-train-file` = (project in file("data-train-file"))
   .settings(commonSettings: _*)
   .dependsOn(`data-train-core`)
@@ -45,8 +50,10 @@ lazy val `data-train` = (project in file("."))
   .dependsOn(`data-train-aws`)
   .dependsOn(`data-train-scrimage`)
   .dependsOn(`data-train-slick`)
+  .dependsOn(`data-train-slick-postgresql`)
   .dependsOn(`data-train-file`)
   .aggregate(`data-train-aws`)
   .aggregate(`data-train-scrimage`)
   .aggregate(`data-train-slick`)
+  .aggregate(`data-train-slick-postgresql`)
   .aggregate(`data-train-file`)

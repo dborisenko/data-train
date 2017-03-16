@@ -18,11 +18,13 @@ trait ResourceJdbcComponent[P <: JdbcProfile] {
 
   import profile.api._
 
-  implicit def localDateTimeColumnType: BaseColumnType[LocalDateTime]
+  def localDateTimeColumnType: BaseColumnType[LocalDateTime]
 
   def resourceTableName: String = "dt_resource"
 
   class ResourceTable(tag: Tag) extends Table[Resource](tag, resourceTableName) {
+    private implicit val ct: BaseColumnType[LocalDateTime] = localDateTimeColumnType
+
     def id: Rep[ResourceId] = column[ResourceId]("id", O.PrimaryKey)
     def createdAt: Rep[LocalDateTime] = column[LocalDateTime]("created_at")
 
