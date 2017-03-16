@@ -7,22 +7,21 @@ import com.dbrsn.datatrain.model.MetadataKey
 import com.dbrsn.datatrain.model.MetadataValue
 import com.dbrsn.datatrain.model.Resource
 import com.dbrsn.datatrain.model.ResourceId
-import shapeless._
-import slick.ast.TypedType
+import shapeless.Generic
+import shapeless.HNil
 import slick.jdbc.JdbcProfile
 import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ResourceMetadataRelationalComponent[P <: JdbcProfile] {
-  self: ResourceRelationalComponent[P] with MetadataComponent[Resource] =>
+trait ResourceMetadataJdbcComponent[P <: JdbcProfile] {
+  self: ResourceJdbcComponent[P] with MetadataComponent[Resource] =>
   val profile: P
 
   import MetadataDSL._
   import profile.api._
 
-  implicit def idKey: TypedType[ResourceId]
-  implicit def metadataKey: TypedType[MetadataKey]
+  implicit def metadataKeyColumnType: BaseColumnType[MetadataKey]
 
   def resourceMetadataTableName: String = "dt_resource_metadata"
 

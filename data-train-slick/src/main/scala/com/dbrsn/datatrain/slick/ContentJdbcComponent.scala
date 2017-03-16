@@ -1,5 +1,7 @@
 package com.dbrsn.datatrain.slick
 
+import java.time.LocalDateTime
+
 import cats.~>
 import com.dbrsn.datatrain.dsl.meta.ContentDSL
 import com.dbrsn.datatrain.dsl.meta.ContentDSL.Create
@@ -8,29 +10,24 @@ import com.dbrsn.datatrain.model.ContentId
 import com.dbrsn.datatrain.model.ContentType
 import com.dbrsn.datatrain.model.Resource
 import com.dbrsn.datatrain.model.ResourceId
-import org.joda.time.DateTime
-import shapeless._
-import slick.ast.TypedType
+import shapeless.Generic
+import shapeless.HNil
 import slick.jdbc.JdbcProfile
 import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ContentRelationalComponent[P <: JdbcProfile] {
-  self: ResourceRelationalComponent[P] =>
+trait ContentJdbcComponent[P <: JdbcProfile] {
+  self: ResourceJdbcComponent[P] =>
   val profile: P
 
   import profile.api._
 
-  implicit def uuidTypedType: TypedType[ContentId]
-  implicit def dateTimeTypedType: TypedType[DateTime]
-
   def contentTableName: String = "dt_content"
 
   class ContentTable(tag: Tag) extends Table[Content](tag, contentTableName) {
-
     def id: Rep[ContentId] = column[ContentId]("id", O.PrimaryKey)
-    def createdAt: Rep[DateTime] = column[DateTime]("created_at")
+    def createdAt: Rep[LocalDateTime] = column[LocalDateTime]("created_at")
     def resourceId: Rep[ResourceId] = column[ResourceId]("resource_id")
     def contentType: Rep[Option[ContentType]] = column[Option[ContentType]]("content_type")
     def contentName: Rep[String] = column[String]("content_name")

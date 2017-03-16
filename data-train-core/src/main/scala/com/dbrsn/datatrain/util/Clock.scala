@@ -1,19 +1,13 @@
 package com.dbrsn.datatrain.util
 
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
-import org.joda.time.LocalDate
+import java.time.LocalDateTime
 
 trait Clock {
-  def timezone: DateTimeZone
-  def now: DateTime
-  def today: LocalDate
+  def now: LocalDateTime
 }
 
 object Clock {
   def apply() = new Clock {
-    val timezone = DateTimeZone.UTC
-    def now: DateTime = DateTime.now(timezone)
-    def today: LocalDate = LocalDate.now(timezone)
+    def now: LocalDateTime = LocalDateTime.now
   }
 }

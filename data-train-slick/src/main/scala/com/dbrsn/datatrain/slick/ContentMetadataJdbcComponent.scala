@@ -7,22 +7,21 @@ import com.dbrsn.datatrain.model.ContentId
 import com.dbrsn.datatrain.model.Metadata
 import com.dbrsn.datatrain.model.MetadataKey
 import com.dbrsn.datatrain.model.MetadataValue
-import shapeless._
-import slick.ast.TypedType
+import shapeless.Generic
+import shapeless.HNil
 import slick.jdbc.JdbcProfile
 import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ContentMetadataRelationalComponent[P <: JdbcProfile] {
-  self: ContentRelationalComponent[P] with MetadataComponent[Content] =>
+trait ContentMetadataJdbcComponent[P <: JdbcProfile] {
+  self: ContentJdbcComponent[P] with MetadataComponent[Content] =>
   val profile: P
 
   import MetadataDSL._
   import profile.api._
 
-  implicit def idKey: TypedType[ContentId]
-  implicit def metadataKey: TypedType[MetadataKey]
+  implicit def metadataKeyColumnType: BaseColumnType[MetadataKey]
 
   def contentMetadataTableName: String = "dt_content_metadata"
 

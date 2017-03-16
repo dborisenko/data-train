@@ -1,6 +1,6 @@
 package com.dbrsn.datatrain.model
 
-import org.joda.time.DateTime
+import java.time.LocalDateTime
 
 sealed trait Identified {
   type Id
@@ -8,7 +8,7 @@ sealed trait Identified {
 
 final case class Content(
   id: ContentId,
-  createdAt: DateTime,
+  createdAt: LocalDateTime,
   resourceId: ResourceId,
   contentType: Option[ContentType],
   contentName: String
@@ -18,7 +18,7 @@ final case class Content(
 
 final case class Resource(
   id: ResourceId,
-  createdAt: DateTime
+  createdAt: LocalDateTime
 ) extends Identified {
   override type Id = ResourceId
 }
