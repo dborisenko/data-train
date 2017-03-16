@@ -6,6 +6,7 @@ import com.dbrsn.datatrain.dsl.meta.ResourceInject
 import com.dbrsn.datatrain.model.Content
 import com.dbrsn.datatrain.model.Resource
 import com.dbrsn.datatrain.model.ResourceId
+import shapeless._
 
 import scala.language.higherKinds
 
@@ -28,26 +29,26 @@ trait BatchConvertComponent[Img, FileExisted, FileNotExisted, DirExisted, Metada
   case class BatchConvert[F[_]](
     convert: ConvertCollection[Convert[F]]
   )(implicit R: ResourceInject[F], CT: Traverse[ConvertCollection])
-    extends ((FileExisted, String) => Free[F, ConvertCollection[Content]])
+    extends ((FileExisted, String) => Free[F, Resource :: ConvertCollection[Content] :: HNil])
       with BaseBatchConvert[F] {
 
-    override def apply(file: FileExisted, fileName: String): Free[F, ConvertCollection[Content]] = for {
+    override def apply(file: FileExisted, fileName: String): Free[F, Resource :: ConvertCollection[Content] :: HNil] = for {
       resource <- R.createResource(Resource(
         id = ResourceId.newResourceId,
         createdAt = clock.now
       ))
       result <- traverseConvertCollection(convert)(file, resource.id)
-    } yield result
+    } yield resource :: result :: HNil
   }
 
   case class NormalizedBatchConvert[F[_]](
     normalizer: Convert[F],
     convertFromNormalized: ConvertCollection[Convert[F]]
   )(implicit R: ResourceInject[F], CT: Traverse[ConvertCollection])
-    extends ((FileExisted, String) => Free[F, ConvertCollection[Content]])
+    extends ((FileExisted, String) => Free[F, Resource :: Content :: ConvertCollection[Content] :: HNil])
       with BaseBatchConvert[F] {
 
-    override def apply(file: FileExisted, fileName: String): Free[F, ConvertCollection[Content]] = for {
+    override def apply(file: FileExisted, fileName: String): Free[F, Resource :: Content :: ConvertCollection[Content] :: HNil] = for {
       resource <- R.createResource(Resource(
         id = ResourceId.newResourceId,
         createdAt = clock.now
@@ -55,7 +56,7 @@ trait BatchConvertComponent[Img, FileExisted, FileNotExisted, DirExisted, Metada
       input <- normalizer.applyWithoutDeleting(file, resource.id)
       result <- traverseConvertCollection(convertFromNormalized)(input.select[FileExisted], resource.id)
       _ <- normalizer.delete(input.select[FileExisted], input.select[DirExisted])
-    } yield result
+    } yield resource :: input.select[Content] :: result :: HNil
   }
 
 }
