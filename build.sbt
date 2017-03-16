@@ -1,3 +1,8 @@
+// https://mvnrepository.com/artifact/org.spire-math/kind-projector_2.12
+val `version.kind-projector` = "0.9.3"
+
+addCompilerPlugin("org.spire-math" %% "kind-projector" % `version.kind-projector`)
+
 lazy val commonSettings = Seq(
   version := "0.0.1-SNAPSHOT",
   organization := "com.dbrsn",
