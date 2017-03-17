@@ -8,20 +8,21 @@ import com.dbrsn.datatrain.model.Metadata
 
 import scala.language.higherKinds
 
-trait MetadataComponent[T <: Identified] {
+trait MetadataComponent {
+  type Target <: Identified
 
   sealed trait MetadataDSL[A]
 
   object MetadataDSL {
 
-    case class Create(metadata: Metadata[T]) extends MetadataDSL[Metadata[T]]
+    case class Create(metadata: Metadata[Target]) extends MetadataDSL[Metadata[Target]]
 
   }
 
   class MetadataInject[F[_]](implicit I: Inject[MetadataDSL, F]) {
     import MetadataDSL._
 
-    final def createMetadata(metadata: Metadata[T]): Free[F, Metadata[T]] = inject[MetadataDSL, F](Create(metadata))
+    final def createMetadata(metadata: Metadata[Target]): Free[F, Metadata[Target]] = inject[MetadataDSL, F](Create(metadata))
   }
 
   object MetadataInject {

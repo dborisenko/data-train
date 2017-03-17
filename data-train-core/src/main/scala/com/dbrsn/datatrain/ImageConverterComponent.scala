@@ -5,8 +5,8 @@ import com.dbrsn.datatrain.dsl.ImageComponent
 
 import scala.language.higherKinds
 
-trait ImageConverterComponent[Img, FileExisted, FileNotExisted] {
-  self: ImageComponent[Img, FileExisted, FileNotExisted] =>
+trait ImageConverterComponent
+  extends ImageComponent {
 
   case class JpegImageConverter[F[_]](
     compression: Int = 80,

@@ -8,7 +8,10 @@ import com.dbrsn.datatrain.model.MetadataValue
 
 import scala.language.higherKinds
 
-trait FsComponent[FileExisted, FileNotExisted, DirExisted] {
+trait FsComponent {
+  type FileExisted
+  type FileNotExisted
+  type DirExisted
 
   sealed trait FsDSL[A]
 

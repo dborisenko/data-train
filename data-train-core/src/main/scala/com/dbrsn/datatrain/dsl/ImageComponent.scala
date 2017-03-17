@@ -6,7 +6,10 @@ import cats.free.Inject
 
 import scala.language.higherKinds
 
-trait ImageComponent[Img, FileExisted, FileNotExisted] {
+trait ImageComponent {
+  type Img
+  type FileExisted
+  type FileNotExisted
 
   sealed trait ImageDSL[A]
 

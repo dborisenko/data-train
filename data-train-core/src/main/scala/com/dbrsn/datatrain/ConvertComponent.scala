@@ -3,8 +3,6 @@ package com.dbrsn.datatrain
 import cats.Traverse
 import cats.free.Free
 import com.dbrsn.datatrain.dsl.FsComponent
-import com.dbrsn.datatrain.dsl.ImageComponent
-import com.dbrsn.datatrain.dsl.StorageComponent
 import com.dbrsn.datatrain.dsl.meta.ContentInject
 import com.dbrsn.datatrain.dsl.meta.MetadataComponent
 import com.dbrsn.datatrain.model.Content
@@ -18,14 +16,14 @@ import shapeless._
 
 import scala.language.higherKinds
 
-trait ConvertComponent[Img, FileExisted, FileNotExisted, DirExisted, MetadataCollection[_]] {
-  self: FsComponent[FileExisted, FileNotExisted, DirExisted]
-    with StorageComponent[Content, FileExisted, FileNotExisted]
-    with ImageConverterComponent[Img, FileExisted, FileNotExisted]
-    with ImageComponent[Img, FileExisted, FileNotExisted]
-    with MetadataComponent[Content] =>
+trait ConvertComponent
+  extends MetadataComponent
+    with FsComponent {
 
   def clock: Clock
+
+  type MetadataCollection[A]
+  override type Target = Content
 
   case class Convert[F[_]](
     contentName: String,
@@ -65,13 +63,10 @@ trait ConvertComponent[Img, FileExisted, FileNotExisted, DirExisted, MetadataCol
 
     def apply(input: FileExisted, resourceId: ResourceId): Free[F, Content] = for {
       out <- applyWithoutDeleting(input, resourceId)
-      _ <- delete(out.select[FileExisted], out.select[DirExisted])
+      _ <- F.deleteFile(out.select[FileExisted])
+      _ <- F.deleteDir(out.select[DirExisted])
     } yield out.select[Content]
 
-    def delete(file: FileExisted, dir: DirExisted): Free[F, Unit] = for {
-      _ <- F.deleteFile(file)
-      _ <- F.deleteDir(dir)
-    } yield ()
   }
 
 }
