@@ -17,7 +17,7 @@ import com.google.common.io.ByteStreams
 
 import scala.util.Try
 
-case class AmazonS3StorageConfig(
+final case class AwsStorageConfig(
   accessKey: Option[String],
   secretKey: Option[String],
   bucketName: String,
@@ -27,11 +27,17 @@ case class AmazonS3StorageConfig(
   val cannedAccessControlList: Option[CannedAccessControlList] = accessControlList.map(CannedAccessControlList.valueOf)
 }
 
-trait AwsComponent {
-  self: StorageComponent[Content, File, File] =>
+trait AwsStorageComponent
+  extends StorageComponent {
   import StorageDSL._
 
-  class AwsInterpreter(config: AmazonS3StorageConfig) extends (StorageDSL ~> Try) {
+  type AwsStorageDSL[A] = StorageDSL[A]
+
+  override type StorageContent = Content
+  override type FileExisted = File
+  override type FileNotExisted = File
+
+  class AwsStorageInterpreter(config: AwsStorageConfig) extends (AwsStorageDSL ~> Try) {
 
     private val amazonS3Client: AmazonS3 = (config.accessKey, config.secretKey) match {
       case (Some(credentialsAccessKey), Some(credentialsSecretKey)) =>
@@ -53,7 +59,7 @@ trait AwsComponent {
       UuidUtil.toBase64(content.resourceId) + "/" + content.contentName
     }
 
-    override def apply[A](fa: StorageDSL[A]): Try[A] = fa match {
+    override def apply[A](fa: AwsStorageDSL[A]): Try[A] = fa match {
       case PutContent(content, inputFile) =>
         Try {
           val src = contentPath(content)

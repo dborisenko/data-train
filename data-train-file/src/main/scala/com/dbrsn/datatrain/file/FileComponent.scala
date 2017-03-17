@@ -13,9 +13,15 @@ import com.google.common.io.Files
 
 import scala.util.Try
 
-trait FileComponent {
-  self: FsComponent[File, File, File] =>
+trait FileComponent
+  extends FsComponent {
   import FsDSL._
+
+  type FileFsDSL[A] = FsDSL[A]
+
+  override type FileExisted = File
+  override type FileNotExisted = File
+  override type DirExisted = File
 
   val FileMetadataInterpreter: File => PartialFunction[MetadataKey, Try[MetadataValue]] = (file: File) => PartialFunction {
     case ContentLengthMetadata =>
@@ -24,8 +30,8 @@ trait FileComponent {
       Try(ContentMd5Metadata(SystemUtil.base64Md5(file)))
   }
 
-  class FileInterpreter(metadataInterpreter: File => MetadataKey => Try[MetadataValue]) extends (FsDSL ~> Try) {
-    override def apply[A](fa: FsDSL[A]): Try[A] = fa match {
+  class FileInterpreter(metadataInterpreter: File => MetadataKey => Try[MetadataValue]) extends (FileFsDSL ~> Try) {
+    override def apply[A](fa: FileFsDSL[A]): Try[A] = fa match {
       case CreateTempDir                =>
         Try(Files.createTempDir())
       case Describe(dir, contentName)   =>

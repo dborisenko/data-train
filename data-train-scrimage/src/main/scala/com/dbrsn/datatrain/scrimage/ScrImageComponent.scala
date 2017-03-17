@@ -15,9 +15,15 @@ import com.sksamuel.scrimage.nio.PngWriter
 
 import scala.util.Try
 
-trait ScrImageComponent {
-  self: ImageComponent[Image, File, File] =>
+trait ScrImageComponent
+  extends ImageComponent {
   import ImageDSL._
+
+  type ScrImageDSL[A] = ImageDSL[A]
+
+  override type Img = Image
+  override type FileExisted = File
+  override type FileNotExisted = File
 
   val ScrImageFileMetadataInterpreter: File => PartialFunction[MetadataKey, Try[MetadataValue]] = (file: File) => PartialFunction {
     case ImageSizeMetadata =>
@@ -27,8 +33,8 @@ trait ScrImageComponent {
       }
   }
 
-  object ScrImageInterpreter extends (ImageDSL ~> Try) {
-    override def apply[A](fa: ImageDSL[A]): Try[A] = fa match {
+  object ScrImageInterpreter extends (ScrImageDSL ~> Try) {
+    override def apply[A](fa: ScrImageDSL[A]): Try[A] = fa match {
       case Cover(input, width, height)                              =>
         Try(input.cover(width, height))
       case ScaleTo(input, width, height)                            =>
