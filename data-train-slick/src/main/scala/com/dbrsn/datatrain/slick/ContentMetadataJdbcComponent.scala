@@ -14,17 +14,23 @@ import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-class ContentMetadataJdbcComponent[P <: JdbcProfile](
-  val profile: P,
-  val contentJdbcC: ContentJdbcComponent[P]
-)(implicit ct: P#BaseColumnType[MetadataKey])
-  extends MetadataComponent {
+trait ContentMetadataComponent extends MetadataComponent {
+  override type Target = Content
+}
+
+trait ContentMetadataJdbcComponent[P <: JdbcProfile] {
+  self: ContentJdbcComponent[P] =>
+
+  val profile: P
+  val metadataKeyColumnType: MetadataKeyColumnType[P]
+  val contentMetadata: ContentMetadataComponent
+
+  import contentMetadata._
   import MetadataDSL._
-  import contentJdbcC._
   import profile.api._
+  import metadataKeyColumnType._
 
   type ContentMetadataJdbcDSL[A] = MetadataDSL[A]
-  override type Target = Content
 
   def contentMetadataTableName: String = "dt_content_metadata"
 

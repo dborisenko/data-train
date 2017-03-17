@@ -17,12 +17,13 @@ import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-class ContentJdbcComponent[P <: JdbcProfile](
-  val profile: P,
-  val resourceJdbcC: ResourceJdbcComponent[P]
-)(implicit ct: P#BaseColumnType[LocalDateTime]) {
-  import resourceJdbcC._
+trait ContentJdbcComponent[P <: JdbcProfile] {
+  self: ResourceJdbcComponent[P] =>
+
+  val profile: P
+
   import profile.api._
+  import localDateTimeColumnType._
 
   type ContentJdbcDSL[A] = ContentDSL[A]
 

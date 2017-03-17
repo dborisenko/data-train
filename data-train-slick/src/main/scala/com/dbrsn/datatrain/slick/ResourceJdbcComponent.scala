@@ -13,10 +13,15 @@ import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
 import slickless._
 
-class ResourceJdbcComponent[P <: JdbcProfile](
+case class LocalDateTimeColumnType[P <: JdbcProfile](implicit columnType: P#BaseColumnType[LocalDateTime])
+
+trait ResourceJdbcComponent[P <: JdbcProfile] {
+
+  val localDateTimeColumnType: LocalDateTimeColumnType[P]
   val profile: P
-)(implicit ct: P#BaseColumnType[LocalDateTime]) {
+
   import profile.api._
+  import localDateTimeColumnType._
 
   type ResourceJdbcDSL[A] = ResourceDSL[A]
 
