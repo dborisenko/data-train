@@ -13,18 +13,16 @@ import slick.jdbc.JdbcProfile
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ResourceJdbcComponent[P <: JdbcProfile] {
+class ResourceJdbcComponent[P <: JdbcProfile](
   val profile: P
-
+)(implicit ct: P#BaseColumnType[LocalDateTime]) {
   import profile.api._
 
-  def localDateTimeColumnType: BaseColumnType[LocalDateTime]
+  type ResourceJdbcDSL[A] = ResourceDSL[A]
 
   def resourceTableName: String = "dt_resource"
 
   class ResourceTable(tag: Tag) extends Table[Resource](tag, resourceTableName) {
-    private implicit val ct: BaseColumnType[LocalDateTime] = localDateTimeColumnType
-
     def id: Rep[ResourceId] = column[ResourceId]("id", O.PrimaryKey)
     def createdAt: Rep[LocalDateTime] = column[LocalDateTime]("created_at")
 
@@ -33,8 +31,8 @@ trait ResourceJdbcComponent[P <: JdbcProfile] {
 
   lazy val resourceTableQuery: TableQuery[ResourceTable] = TableQuery[ResourceTable]
 
-  object ResourceInterpreter extends (ResourceDSL ~> DBIO) {
-    override def apply[A](fa: ResourceDSL[A]): DBIO[A] = fa match {
+  object ResourceInterpreter extends (ResourceJdbcDSL ~> DBIO) {
+    override def apply[A](fa: ResourceJdbcDSL[A]): DBIO[A] = fa match {
       case Create(resource) => (resourceTableQuery returning resourceTableQuery.map(_.id) into ((v, _) => v)) += resource
     }
   }

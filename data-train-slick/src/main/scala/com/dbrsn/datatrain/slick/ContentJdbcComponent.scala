@@ -17,17 +17,18 @@ import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ContentJdbcComponent[P <: JdbcProfile] {
-  self: ResourceJdbcComponent[P] =>
-  val profile: P
-
+class ContentJdbcComponent[P <: JdbcProfile](
+  val profile: P,
+  val resourceJdbcC: ResourceJdbcComponent[P]
+)(implicit ct: P#BaseColumnType[LocalDateTime]) {
+  import resourceJdbcC._
   import profile.api._
+
+  type ContentJdbcDSL[A] = ContentDSL[A]
 
   def contentTableName: String = "dt_content"
 
   class ContentTable(tag: Tag) extends Table[Content](tag, contentTableName) {
-    private implicit val ct: BaseColumnType[LocalDateTime] = localDateTimeColumnType
-
     def id: Rep[ContentId] = column[ContentId]("id", O.PrimaryKey)
     def createdAt: Rep[LocalDateTime] = column[LocalDateTime]("created_at")
     def resourceId: Rep[ResourceId] = column[ResourceId]("resource_id")
@@ -41,8 +42,8 @@ trait ContentJdbcComponent[P <: JdbcProfile] {
 
   lazy val contentTableQuery: TableQuery[ContentTable] = TableQuery[ContentTable]
 
-  object ContentInterpreter extends (ContentDSL ~> DBIO) {
-    override def apply[A](fa: ContentDSL[A]): DBIO[A] = fa match {
+  object ContentInterpreter extends (ContentJdbcDSL ~> DBIO) {
+    override def apply[A](fa: ContentJdbcDSL[A]): DBIO[A] = fa match {
       case Create(content) => (contentTableQuery returning contentTableQuery.map(_.id) into ((v, _) => v)) += content
     }
   }

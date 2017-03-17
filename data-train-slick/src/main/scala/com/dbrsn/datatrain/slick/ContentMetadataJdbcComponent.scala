@@ -14,21 +14,21 @@ import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ContentMetadataJdbcComponent[P <: JdbcProfile] {
-  self: ContentJdbcComponent[P] with HasMetadataKeyColumnType[P] =>
-  val profile: P
-  val contentMetadata: MetadataComponent[Content]
-
-  import contentMetadata._
+class ContentMetadataJdbcComponent[P <: JdbcProfile](
+  val profile: P,
+  val contentJdbcC: ContentJdbcComponent[P]
+)(implicit ct: P#BaseColumnType[MetadataKey])
+  extends MetadataComponent {
   import MetadataDSL._
+  import contentJdbcC._
   import profile.api._
 
+  type ContentMetadataJdbcDSL[A] = MetadataDSL[A]
+  override type Target = Content
 
   def contentMetadataTableName: String = "dt_content_metadata"
 
   class ContentMetadataTable(tag: Tag) extends Table[Metadata[Content]](tag, contentMetadataTableName) {
-    private implicit val ct: BaseColumnType[MetadataKey] = metadataKeyColumnType
-
     def id: Rep[ContentId] = column[ContentId]("id", O.PrimaryKey)
     def key: Rep[MetadataKey] = column[MetadataKey]("key")
     def value: Rep[MetadataValue] = column[MetadataValue]("value")
@@ -40,8 +40,8 @@ trait ContentMetadataJdbcComponent[P <: JdbcProfile] {
 
   lazy val contentMetadataTableQuery: TableQuery[ContentMetadataTable] = TableQuery[ContentMetadataTable]
 
-  object ContentMetadataInterpreter extends (MetadataDSL ~> DBIO) {
-    override def apply[A](fa: MetadataDSL[A]): DBIO[A] = fa match {
+  object ContentMetadataInterpreter extends (ContentMetadataJdbcDSL ~> DBIO) {
+    override def apply[A](fa: ContentMetadataJdbcDSL[A]): DBIO[A] = fa match {
       case Create(metadata) => (contentMetadataTableQuery returning contentMetadataTableQuery.map(_.id) into ((v, _) => v)) += metadata
     }
   }

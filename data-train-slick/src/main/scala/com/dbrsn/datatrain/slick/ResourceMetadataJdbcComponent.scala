@@ -14,20 +14,22 @@ import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ResourceMetadataJdbcComponent[P <: JdbcProfile] {
-  self: ResourceJdbcComponent[P] with HasMetadataKeyColumnType[P] =>
-  val profile: P
-  val resourceMetadata: MetadataComponent[Resource]
-
-  import resourceMetadata._
+class ResourceMetadataJdbcComponent[P <: JdbcProfile](
+  val profile: P,
+  val resourceJdbcC: ResourceJdbcComponent[P]
+)(implicit ct: P#BaseColumnType[MetadataKey])
+  extends MetadataComponent {
   import MetadataDSL._
+  import resourceJdbcC._
   import profile.api._
+
+  type ResourceMetadataJdbcDSL[A] = MetadataDSL[A]
+
+  override type Target = Resource
 
   def resourceMetadataTableName: String = "dt_resource_metadata"
 
   class ResourceMetadataTable(tag: Tag) extends Table[Metadata[Resource]](tag, resourceMetadataTableName) {
-    private implicit val ct: BaseColumnType[MetadataKey] = metadataKeyColumnType
-
     def id: Rep[ResourceId] = column[ResourceId]("id", O.PrimaryKey)
     def key: Rep[MetadataKey] = column[MetadataKey]("key")
     def value: Rep[MetadataValue] = column[MetadataValue]("value")
@@ -39,8 +41,8 @@ trait ResourceMetadataJdbcComponent[P <: JdbcProfile] {
 
   lazy val resourceMetadataTableQuery: TableQuery[ResourceMetadataTable] = TableQuery[ResourceMetadataTable]
 
-  object ResourceMetadataInterpreter extends (MetadataDSL ~> DBIO) {
-    override def apply[A](fa: MetadataDSL[A]): DBIO[A] = fa match {
+  object ResourceMetadataInterpreter extends (ResourceMetadataJdbcDSL ~> DBIO) {
+    override def apply[A](fa: ResourceMetadataJdbcDSL[A]): DBIO[A] = fa match {
       case Create(metadata) => (resourceMetadataTableQuery returning resourceMetadataTableQuery.map(_.id) into ((v, _) => v)) += metadata
     }
   }
