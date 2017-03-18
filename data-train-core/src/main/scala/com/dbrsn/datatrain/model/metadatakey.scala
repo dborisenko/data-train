@@ -1,5 +1,6 @@
 package com.dbrsn.datatrain.model
 
+import cats.syntax.either._
 import enumeratum.Enum
 import enumeratum.EnumEntry
 import io.circe.Decoder
