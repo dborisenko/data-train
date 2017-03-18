@@ -22,12 +22,10 @@ import com.dbrsn.datatrain.model.Resource
 import com.dbrsn.datatrain.model.ResourceMetadataKey
 import com.dbrsn.datatrain.scrimage.ScrImageComponent
 import com.dbrsn.datatrain.slick.ContentJdbcComponent
-import com.dbrsn.datatrain.slick.ContentMetadataComponent
 import com.dbrsn.datatrain.slick.ContentMetadataJdbcComponent
 import com.dbrsn.datatrain.slick.LocalDateTimeColumnType
 import com.dbrsn.datatrain.slick.MetadataKeyColumnType
 import com.dbrsn.datatrain.slick.ResourceJdbcComponent
-import com.dbrsn.datatrain.slick.ResourceMetadataComponent
 import com.dbrsn.datatrain.slick.ResourceMetadataJdbcComponent
 import com.dbrsn.datatrain.slick.postgresql.DefaultProfile
 import com.dbrsn.datatrain.util.Clock
@@ -49,7 +47,6 @@ class DefaultConvertService[P <: DefaultProfile](
   with ScrImageComponent
   with AwsStorageComponent
   with FileComponent
-  with ContentMetadataComponent
   with ResourceJdbcComponent[P]
   with ContentJdbcComponent[P]
   with ResourceMetadataJdbcComponent[P]
@@ -85,9 +82,6 @@ class DefaultConvertService[P <: DefaultProfile](
     (name: String) => ContentMetadataKey.withNameInsensitiveOption(name).getOrElse(ResourceMetadataKey.withNameInsensitive(name))
   ))
   override val localDateTimeColumnType: LocalDateTimeColumnType[P] = LocalDateTimeColumnType[P]()
-
-  override val resourceMetadata: ResourceMetadataComponent = new ResourceMetadataComponent {}
-  override val contentMetadata: ContentMetadataComponent = this
 
   val metadataHandler: File => MetadataKey => Try[MetadataValue] = (file: File) => FileMetadataInterpreter(file) orElse ScrImageFileMetadataInterpreter(file)
 

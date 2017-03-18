@@ -4,7 +4,7 @@ import cats.Traverse
 import cats.free.Free
 import com.dbrsn.datatrain.dsl.FsComponent
 import com.dbrsn.datatrain.dsl.meta.ContentInject
-import com.dbrsn.datatrain.dsl.meta.MetadataComponent
+import com.dbrsn.datatrain.dsl.meta.ContentMetadataInject
 import com.dbrsn.datatrain.model.Content
 import com.dbrsn.datatrain.model.ContentId
 import com.dbrsn.datatrain.model.ContentMetadataKey
@@ -17,20 +17,18 @@ import shapeless._
 import scala.language.higherKinds
 
 trait ConvertComponent
-  extends MetadataComponent
-    with FsComponent {
+  extends FsComponent {
 
   def clock: Clock
 
   type MetadataCollection[A]
-  override type Target = Content
 
   case class Convert[F[_]](
     contentName: String,
     contentType: Option[ContentType],
     converter: (FileExisted, FileNotExisted) => Free[F, FileExisted],
     metadata: MetadataCollection[ContentMetadataKey]
-  )(implicit F: FsInject[F], M: MetadataInject[F], C: ContentInject[F], CT: Traverse[MetadataCollection])
+  )(implicit F: FsInject[F], M: ContentMetadataInject[F], C: ContentInject[F], CT: Traverse[MetadataCollection])
     extends ((FileExisted, ResourceId) => Free[F, Content]) {
 
     type FreeF[A] = Free[F, A]
@@ -38,7 +36,7 @@ trait ConvertComponent
     def traverseMetadata(content: Content, file: FileExisted): FreeF[MetadataCollection[Metadata[Content]]] = CT.traverse(metadata) { key =>
       val g: FreeF[Metadata[Content]] = for {
         value <- F.readMetadata(file, key)
-        m <- M.createMetadata(Metadata[Content](
+        m <- M.createContentMetadata(Metadata[Content](
           id = content.id,
           key = key,
           value = value

@@ -1,7 +1,7 @@
 package com.dbrsn.datatrain.slick
 
 import cats.~>
-import com.dbrsn.datatrain.dsl.meta.MetadataComponent
+import com.dbrsn.datatrain.dsl.meta.ContentMetadataDSL
 import com.dbrsn.datatrain.model.Content
 import com.dbrsn.datatrain.model.ContentId
 import com.dbrsn.datatrain.model.Metadata
@@ -14,23 +14,17 @@ import slick.lifted.ForeignKeyQuery
 import slick.lifted.ProvenShape
 import slickless._
 
-trait ContentMetadataComponent extends MetadataComponent {
-  override type Target = Content
-}
-
 trait ContentMetadataJdbcComponent[P <: JdbcProfile] {
   self: ContentJdbcComponent[P] =>
 
   val profile: P
   val metadataKeyColumnType: MetadataKeyColumnType[P]
-  val contentMetadata: ContentMetadataComponent
 
-  import contentMetadata._
-  import MetadataDSL._
+  import ContentMetadataDSL._
   import profile.api._
   import metadataKeyColumnType._
 
-  type ContentMetadataJdbcDSL[A] = MetadataDSL[A]
+  type ContentMetadataJdbcDSL[A] = ContentMetadataDSL[A]
 
   def contentMetadataTableName: String = "dt_content_metadata"
 

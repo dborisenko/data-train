@@ -1,7 +1,7 @@
 package com.dbrsn.datatrain.slick
 
 import cats.~>
-import com.dbrsn.datatrain.dsl.meta.MetadataComponent
+import com.dbrsn.datatrain.dsl.meta.ResourceMetadataDSL
 import com.dbrsn.datatrain.model.Metadata
 import com.dbrsn.datatrain.model.MetadataKey
 import com.dbrsn.datatrain.model.MetadataValue
@@ -16,23 +16,17 @@ import slickless._
 
 case class MetadataKeyColumnType[P <: JdbcProfile](implicit columnType: P#BaseColumnType[MetadataKey])
 
-trait ResourceMetadataComponent extends MetadataComponent {
-  override type Target = Resource
-}
-
 trait ResourceMetadataJdbcComponent[P <: JdbcProfile] {
   self: ResourceJdbcComponent[P] =>
 
   val profile: P
   val metadataKeyColumnType: MetadataKeyColumnType[P]
-  val resourceMetadata: ResourceMetadataComponent
 
-  import resourceMetadata._
-  import MetadataDSL._
+  import ResourceMetadataDSL._
   import profile.api._
   import metadataKeyColumnType._
 
-  type ResourceMetadataJdbcDSL[A] = MetadataDSL[A]
+  type ResourceMetadataJdbcDSL[A] = ResourceMetadataDSL[A]
 
   def resourceMetadataTableName: String = "dt_resource_metadata"
 

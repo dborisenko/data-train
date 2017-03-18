@@ -4,6 +4,7 @@ import cats.free.Free
 import cats.free.Free.inject
 import cats.free.Inject
 import com.dbrsn.datatrain.model.Content
+import com.dbrsn.datatrain.model.Metadata
 import com.dbrsn.datatrain.model.Resource
 
 import scala.language.higherKinds
@@ -42,4 +43,40 @@ class ResourceInject[F[_]](implicit I: Inject[ResourceDSL, F]) {
 
 object ResourceInject {
   implicit def resource[F[_]](implicit I: Inject[ResourceDSL, F]): ResourceInject[F] = new ResourceInject[F]
+}
+
+sealed trait ContentMetadataDSL[A]
+
+object ContentMetadataDSL {
+
+  case class Create(metadata: Metadata[Content]) extends ContentMetadataDSL[Metadata[Content]]
+
+}
+
+class ContentMetadataInject[F[_]](implicit I: Inject[ContentMetadataDSL, F]) {
+  import ContentMetadataDSL._
+
+  final def createContentMetadata(metadata: Metadata[Content]): Free[F, Metadata[Content]] = inject[ContentMetadataDSL, F](Create(metadata))
+}
+
+object ContentMetadataInject {
+  implicit def contentMetadata[F[_]](implicit I: Inject[ContentMetadataDSL, F]): ContentMetadataInject[F] = new ContentMetadataInject[F]
+}
+
+sealed trait ResourceMetadataDSL[A]
+
+object ResourceMetadataDSL {
+
+  case class Create(metadata: Metadata[Resource]) extends ResourceMetadataDSL[Metadata[Resource]]
+
+}
+
+class ResourceMetadataInject[F[_]](implicit I: Inject[ResourceMetadataDSL, F]) {
+  import ResourceMetadataDSL._
+
+  final def createResourceMetadata(metadata: Metadata[Resource]): Free[F, Metadata[Resource]] = inject[ResourceMetadataDSL, F](Create(metadata))
+}
+
+object ResourceMetadataInject {
+  implicit def resourceMetadata[F[_]](implicit I: Inject[ResourceMetadataDSL, F]): ResourceMetadataInject[F] = new ResourceMetadataInject[F]
 }
