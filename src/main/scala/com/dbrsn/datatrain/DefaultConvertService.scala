@@ -3,8 +3,6 @@ package com.dbrsn.datatrain
 import java.io.File
 
 import cats.data.Coproduct
-import cats.instances.list._
-import cats.instances.future._
 import cats.implicits._
 import cats.~>
 import com.dbrsn.datatrain.aws.AwsStorageComponent
@@ -34,6 +32,7 @@ import com.dbrsn.datatrain.util.Clock
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.Try
 
@@ -43,7 +42,7 @@ class DefaultConvertService[P <: DefaultProfile](
   val db: P#Backend#Database,
   val clock: Clock,
   maxErrorRetries: Int = 3
-) extends ConvertService
+)(implicit ec: ExecutionContext) extends ConvertService
   with BatchConvertComponent
   with ImageConverterComponent
   with ScrImageComponent
