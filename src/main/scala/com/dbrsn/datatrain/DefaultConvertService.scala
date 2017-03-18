@@ -40,7 +40,7 @@ class DefaultConvertService[P <: DefaultProfile](
   val config: AwsStorageConfig,
   val profile: P,
   val db: P#Backend#Database,
-  val clock: Clock,
+  val clock: Clock = Clock(),
   maxErrorRetries: Int = 3
 )(implicit ec: ExecutionContext) extends ConvertService
   with BatchConvertComponent
