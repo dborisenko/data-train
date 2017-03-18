@@ -3,7 +3,9 @@ package com.dbrsn.datatrain
 import java.io.File
 
 import cats.data.Coproduct
-import cats.instances.all._
+import cats.instances.list._
+import cats.instances.future._
+import cats.implicits._
 import cats.~>
 import com.dbrsn.datatrain.aws.AwsStorageComponent
 import com.dbrsn.datatrain.aws.AwsStorageConfig
@@ -60,12 +62,12 @@ class DefaultConvertService[P <: DefaultProfile](
   override type ConvertCollection[A] = List[A]
   override type MetadataCollection[A] = List[A]
 
-  type Cop1[A] = Coproduct[ResourceJdbcDSL, ContentJdbcDSL, A]
-  type Cop2[A] = Coproduct[Cop1, ResourceMetadataJdbcDSL, A]
-  type Cop3[A] = Coproduct[Cop2, ContentMetadataJdbcDSL, A]
-  type Cop4[A] = Coproduct[Cop3, FileFsDSL, A]
-  type Cop5[A] = Coproduct[Cop4, ScrImageDSL, A]
-  type Cop[A] = Coproduct[Cop5, AwsStorageDSL, A]
+  type Cop1[A] = Coproduct[ScrImageDSL, AwsStorageDSL, A]
+  type Cop2[A] = Coproduct[FileFsDSL, Cop1, A]
+  type Cop3[A] = Coproduct[ContentMetadataJdbcDSL, Cop2, A]
+  type Cop4[A] = Coproduct[ResourceMetadataJdbcDSL, Cop3, A]
+  type Cop5[A] = Coproduct[ContentJdbcDSL, Cop4, A]
+  type Cop[A] = Coproduct[ResourceJdbcDSL, Cop5, A]
 
   private val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -106,11 +108,15 @@ class DefaultConvertService[P <: DefaultProfile](
     override def apply[A](fa: DBIO[A]): Future[A] = db.run(fa)
   }
 
-  val interpreterToDbio: Cop ~> DBIO = ResourceInterpreter or ContentInterpreter or ResourceMetadataInterpreter or ContentMetadataInterpreter or
-    (fileRetryInterpreter andThen tryToDbioInterpreter) or (imageInterpreter andThen tryToDbioInterpreter) or
-    (storageRetryInterpreter andThen tryToDbioInterpreter)
-  val interpreterToTransactionalDbio: Cop ~> DBIO = interpreterToDbio andThen dbioTransactionalInterpreter
-  val interpreter: Cop ~> Future = interpreterToTransactionalDbio andThen dbioToFutureInterpreter
+  val dbioInterpreter1: Cop1 ~> DBIO = (imageInterpreter andThen tryToDbioInterpreter) or (storageRetryInterpreter andThen tryToDbioInterpreter)
+  val dbioInterpreter2: Cop2 ~> DBIO = (fileRetryInterpreter andThen tryToDbioInterpreter) or dbioInterpreter1
+  val dbioInterpreter3: Cop3 ~> DBIO = ContentMetadataInterpreter or dbioInterpreter2
+  val dbioInterpreter4: Cop4 ~> DBIO = ResourceMetadataInterpreter or dbioInterpreter3
+  val dbioInterpreter5: Cop5 ~> DBIO = ContentInterpreter or dbioInterpreter4
+  val dbioInterpreter: Cop ~> DBIO = ResourceInterpreter or dbioInterpreter5
+
+  val dbioInterpreterToTransactional: Cop ~> DBIO = dbioInterpreter andThen dbioTransactionalInterpreter
+  val futureInterpreter: Cop ~> Future = dbioInterpreterToTransactional andThen dbioToFutureInterpreter
 
   override def postJpegCovers(file: File, fileName: String, coverSizes: Seq[ImageSize]): Future[Covers] = {
     val program = NormalizedBatchConvert[Cop](
@@ -134,6 +140,6 @@ class DefaultConvertService[P <: DefaultProfile](
         resource = v.select[Resource],
         origin = v.select[Content],
         covers = v.select[ConvertCollection[Content]])
-    }.foldMap(interpreter)
+    }.foldMap(futureInterpreter)
   }
 }
