@@ -93,8 +93,8 @@ class DefaultConvertService[P <: DefaultProfile](
   val storageInterpreter: AwsStorageDSL ~> Try = new AwsStorageInterpreter(config)
   val storageRetryInterpreter: AwsStorageDSL ~> Try = new RetryErrors[AwsStorageDSL, Try, Throwable](storageInterpreter, retriesOnError)
 
-  val FileDefaultMetadata: List[ContentMetadataKey] = List(ContentLengthMetadata, ContentMd5Metadata)
-  val ImageFileDefaultMetadata: List[ContentMetadataKey] = FileDefaultMetadata :+ ImageSizeMetadata
+  val FileDefaultMetadata: MetadataCollection[ContentMetadataKey] = List(ContentLengthMetadata, ContentMd5Metadata)
+  val ImageFileDefaultMetadata: MetadataCollection[ContentMetadataKey] = FileDefaultMetadata :+ ImageSizeMetadata
 
   val tryToDbioInterpreter: Try ~> DBIO = new (Try ~> DBIO) {
     override def apply[A](fa: Try[A]): DBIO[A] = DBIO.from(Future.fromTry(fa))
@@ -106,9 +106,11 @@ class DefaultConvertService[P <: DefaultProfile](
     override def apply[A](fa: DBIO[A]): Future[A] = db.run(fa)
   }
 
-  val interpreter: Cop ~> Future = (ResourceInterpreter or ContentInterpreter or ResourceMetadataInterpreter or ContentMetadataInterpreter or
+  val interpreterToDbio: Cop ~> DBIO = ResourceInterpreter or ContentInterpreter or ResourceMetadataInterpreter or ContentMetadataInterpreter or
     (fileRetryInterpreter andThen tryToDbioInterpreter) or (imageInterpreter andThen tryToDbioInterpreter) or
-    (storageRetryInterpreter andThen tryToDbioInterpreter)) andThen dbioTransactionalInterpreter andThen dbioToFutureInterpreter
+    (storageRetryInterpreter andThen tryToDbioInterpreter)
+  val interpreterToTransactionalDbio: Cop ~> DBIO = interpreterToDbio andThen dbioTransactionalInterpreter
+  val interpreter: Cop ~> Future = interpreterToTransactionalDbio andThen dbioToFutureInterpreter
 
   override def postJpegCovers(file: File, fileName: String, coverSizes: Seq[ImageSize]): Future[Covers] = {
     val program = NormalizedBatchConvert[Cop](
@@ -131,7 +133,7 @@ class DefaultConvertService[P <: DefaultProfile](
       Covers(
         resource = v.select[Resource],
         origin = v.select[Content],
-        covers = v.select[List[Content]])
+        covers = v.select[ConvertCollection[Content]])
     }.foldMap(interpreter)
   }
 }
