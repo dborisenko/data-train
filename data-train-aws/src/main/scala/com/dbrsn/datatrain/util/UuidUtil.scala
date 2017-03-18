@@ -5,10 +5,10 @@ import java.util.Base64
 import java.util.UUID
 
 object UuidUtil {
-  private val encoder = Base64.getUrlEncoder
-  private val decoder = Base64.getUrlDecoder
+  private val encoder: Base64.Encoder = Base64.getUrlEncoder
+  private val decoder: Base64.Decoder = Base64.getUrlDecoder
 
-  private val lastRedundantCharacters = "=="
+  private val lastRedundantCharacters: String = "=="
 
   def toBase64(uuid: UUID): String = {
     val uuidBytes = ByteBuffer.wrap(new Array[Byte](16))

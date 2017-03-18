@@ -7,7 +7,7 @@ import java.security.MessageDigest
 import javax.xml.bind.DatatypeConverter
 
 object SystemUtil {
-  private val BUF_SIZE = 0x1000
+  private val BUF_SIZE: Int = 0x1000
 
   def md5(file: File): Array[Byte] = {
     val md = MessageDigest.getInstance("MD5")
