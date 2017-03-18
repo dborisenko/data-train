@@ -94,9 +94,6 @@ class DefaultConvertService[P <: DefaultProfile](
   val storageInterpreter: AwsStorageDSL ~> Try = new AwsStorageInterpreter(config)
   val storageRetryInterpreter: AwsStorageDSL ~> Try = new RetryErrors[AwsStorageDSL, Try, Throwable](storageInterpreter, retriesOnError)
 
-  val FileDefaultMetadata: MetadataCollection[ContentMetadataKey] = List(ContentLengthMetadata, ContentMd5Metadata)
-  val ImageFileDefaultMetadata: MetadataCollection[ContentMetadataKey] = FileDefaultMetadata :+ ImageSizeMetadata
-
   val tryToDbioInterpreter: Try ~> DBIO = new (Try ~> DBIO) {
     override def apply[A](fa: Try[A]): DBIO[A] = DBIO.from(Future.fromTry(fa))
   }
@@ -116,6 +113,9 @@ class DefaultConvertService[P <: DefaultProfile](
 
   val dbioInterpreterToTransactional: Cop ~> DBIO = dbioInterpreter andThen dbioTransactionalInterpreter
   val futureInterpreter: Cop ~> Future = dbioInterpreterToTransactional andThen dbioToFutureInterpreter
+
+  val FileDefaultMetadata: MetadataCollection[ContentMetadataKey] = List(ContentLengthMetadata, ContentMd5Metadata)
+  val ImageFileDefaultMetadata: MetadataCollection[ContentMetadataKey] = FileDefaultMetadata :+ ImageSizeMetadata
 
   override def postJpegCovers(file: File, fileName: String, coverSizes: Seq[ImageSize]): Future[Covers] = {
     val program = NormalizedBatchConvert[Cop](
