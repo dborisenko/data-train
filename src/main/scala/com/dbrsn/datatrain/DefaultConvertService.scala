@@ -129,7 +129,12 @@ class DefaultConvertService[P <: DefaultProfile](
         Convert[Cop](
           contentName = s"${size.width}x${size.height}.${MimeType.jpg.extension}",
           contentType = Some(MimeType.jpg.contentType),
-          converter = JpegImageConverter[Cop](),
+          converter = JpegImageConverter[Cop](
+            transformer = CoverTransformer(
+              width = size.width,
+              height = size.height
+            )
+          ),
           metadata = ImageFileDefaultMetadata
         )
       }.toList
